@@ -30,3 +30,32 @@ or you may grab the latest source code from GitHub:
 $ git clone https://github.com/Zenduty/zenduty-python-sdk
 $ python3 setup.py install
 ```
+
+## Example Failure Callback Usage
+
+```
+from airflow.models import DAG, Variable
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.pagerduty import ZendutyIncidentOperator
+
+my_test_dag = DAG('example')
+
+op = BashOperator(
+    dag=my_test_dag,
+    task_id='my_task',
+    provide_context=True,
+    python_callable=my_python_job,
+    on_failure_callback=zenduty_incident
+)
+    
+def zenduty_incident():
+
+    operator = ZendutyIncidentOperator(
+        api_key=Variable.get("api_key"),
+        integration_id=Variable.get("integration_id"),
+        title="Test Title",
+        summary="Test Summary"
+    )
+
+    return operator.execute()
+```
